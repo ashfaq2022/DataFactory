@@ -1,0 +1,40 @@
+{
+	"name": "PL_Error_handling",
+	"properties": {
+		"description": "Divert the error records to separate table using data flow",
+		"activities": [
+			{
+				"name": "Data flow1",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_separate_error_records",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"ADWCustomer": {
+								"FileName": "Customer_error.txt"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2022-09-02T21:38:35Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

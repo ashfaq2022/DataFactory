@@ -1,0 +1,9 @@
+{
+	"name": "ADFMission100",
+	"location": "eastus2",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "3271e6d7-4993-4cd5-bde0-2572a79bafb4",
+		"tenantId": "4213be2d-d85f-4fc0-bcbb-82318532d02c"
+	}
+}

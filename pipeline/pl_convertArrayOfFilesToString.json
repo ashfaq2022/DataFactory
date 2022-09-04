@@ -1,0 +1,108 @@
+{
+	"name": "pl_convertArrayOfFilesToString",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup1",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_SrcDatalake_ADW_Folder",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": "EmailList.csv"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup1').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Set Email list temp",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "EmailListTemp",
+								"value": {
+									"value": "@concat(item().Emails,';', variables('EmailList'))",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Set Email list Final",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set Email list temp",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "EmailList",
+								"value": {
+									"value": "@variables('EmailListTemp')",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"EmailList": {
+				"type": "String"
+			},
+			"EmailListTemp": {
+				"type": "String",
+				"defaultValue": "''"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-09-03T23:55:10Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

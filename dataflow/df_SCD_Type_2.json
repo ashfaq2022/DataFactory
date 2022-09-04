@@ -1,0 +1,187 @@
+{
+	"name": "df_SCD_Type_2",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_customer",
+						"type": "DatasetReference"
+					},
+					"name": "CustomerInputFile"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_PractiseDB_Customer",
+						"type": "DatasetReference"
+					},
+					"name": "PractoseDBCustomer"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_PractiseDB_Customer",
+						"type": "DatasetReference"
+					},
+					"name": "PractiseCustomerTable"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_PractiseDB_Customer",
+						"type": "DatasetReference"
+					},
+					"name": "PractiseCustomerTableExisting"
+				}
+			],
+			"transformations": [
+				{
+					"name": "GenerateFileHash"
+				},
+				{
+					"name": "GenerateTableHash"
+				},
+				{
+					"name": "CheckIfHaskKeyexists"
+				},
+				{
+					"name": "AddIsActive"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "CheckTblrecordVsSelect1"
+				},
+				{
+					"name": "AddIsActive0"
+				},
+				{
+					"name": "alterRow1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          CompanyName as string,",
+				"          SalesPerson as string,",
+				"          EmailAddress as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> CustomerInputFile",
+				"source(output(",
+				"          CustomerID as integer,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          CompanyName as string,",
+				"          SalesPerson as string,",
+				"          EmailAddress as string,",
+				"          IsActive as boolean,",
+				"          EffectiveStartDate as timestamp,",
+				"          EndDate as timestamp,",
+				"          CreatedDate as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> PractoseDBCustomer",
+				"CustomerInputFile derive(HashKey = md5(FirstName,LastName,CompanyName,SalesPerson,EmailAddress)) ~> GenerateFileHash",
+				"PractoseDBCustomer derive(HashKey = md5(FirstName,LastName,CompanyName,SalesPerson,EmailAddress)) ~> GenerateTableHash",
+				"GenerateFileHash, GenerateTableHash exists(GenerateFileHash@HashKey == GenerateTableHash@HashKey,",
+				"     negate:true,",
+				"     broadcast: 'auto')~> CheckIfHaskKeyexists",
+				"CheckIfHaskKeyexists derive(NewIsActive = 1,",
+				"          StartDate = currentDate()) ~> AddIsActive",
+				"AddIsActive select(mapColumn(",
+				"          FirstName,",
+				"          LastName,",
+				"          CompanyName,",
+				"          SalesPerson,",
+				"          EmailAddress,",
+				"          HashKey,",
+				"          NewIsActive,",
+				"          StartDate",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"GenerateTableHash, select1 exists(PractoseDBCustomer@FirstName == select1@FirstName",
+				"     && PractoseDBCustomer@LastName == select1@LastName,",
+				"     negate:false,",
+				"     broadcast: 'auto')~> CheckTblrecordVsSelect1",
+				"CheckTblrecordVsSelect1 derive(IsActive = 0,",
+				"          EndDate = currentDate()) ~> AddIsActive0",
+				"AddIsActive0 alterRow(updateIf(true())) ~> alterRow1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          CustomerID as integer,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          CompanyName as string,",
+				"          SalesPerson as string,",
+				"          EmailAddress as string,",
+				"          IsActive as boolean,",
+				"          EffectiveStartDate as timestamp,",
+				"          EndDate as timestamp,",
+				"          CreatedDate as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          FirstName,",
+				"          LastName,",
+				"          CompanyName,",
+				"          SalesPerson,",
+				"          EmailAddress,",
+				"          IsActive = NewIsActive,",
+				"          EffectiveStartDate = StartDate",
+				"     )) ~> PractiseCustomerTable",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          CustomerID as integer,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          CompanyName as string,",
+				"          SalesPerson as string,",
+				"          EmailAddress as string,",
+				"          IsActive as boolean,",
+				"          EffectiveStartDate as timestamp,",
+				"          EndDate as timestamp,",
+				"          CreatedDate as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['FirstName','LastName','CustomerID'],",
+				"     skipKeyWrites:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          CustomerID,",
+				"          FirstName,",
+				"          LastName,",
+				"          CompanyName,",
+				"          SalesPerson,",
+				"          EmailAddress,",
+				"          IsActive,",
+				"          EffectiveStartDate,",
+				"          EndDate,",
+				"          CreatedDate",
+				"     )) ~> PractiseCustomerTableExisting"
+			]
+		}
+	}
+}

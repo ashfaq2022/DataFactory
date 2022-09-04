@@ -1,0 +1,71 @@
+{
+	"name": "pl_sendemail_onerror",
+	"properties": {
+		"activities": [
+			{
+				"name": "Web1",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Lookup1",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-84.eastus.logic.azure.com:443/workflows/f198a04829064d78a1d61d3be54ec0a8/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=EKk7WlZiYqY-veLXE429brnmfH6uaTSEZZLsBSWj1ns",
+					"method": "POST",
+					"body": {
+						"value": "{\n\"pipelineName\" : \"@{pipeline().Pipeline}\",\n\"AdfName\" : \"@{pipeline().DataFactory}\",\n\"TriggerName\" : \"@{pipeline().TriggerName}\" ,\n\"ErrorMessage\": \"@{activity('Lookup1').Error.Message}\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Lookup1",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_ADW_Stage_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": "Prodcut.csv"
+						}
+					}
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2022-09-04T04:20:48Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

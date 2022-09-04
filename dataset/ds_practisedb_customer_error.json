@@ -1,0 +1,17 @@
+{
+	"name": "ds_practisedb_customer_error",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_PractiseSQLDB",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Customer_error"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

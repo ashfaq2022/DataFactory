@@ -1,0 +1,21 @@
+{
+	"name": "ds_Srcparquet_Datalake_NoParameter",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_mission100Datalake",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "adventureworks/Stage",
+				"fileSystem": "inputdata"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

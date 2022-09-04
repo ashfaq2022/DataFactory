@@ -1,0 +1,82 @@
+{
+	"name": "pl_IngestdynamicInputParameter_sql_blob",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data from given table to data lake",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@concat('SELECT * FROM ',pipeline().parameters.schemaname,'.',pipeline().parameters.tablename)",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".csv"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_dynamic_azuresql",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dynamic_datalake",
+						"type": "DatasetReference",
+						"parameters": {
+							"table": {
+								"value": "@concat(pipeline().parameters.tablename,'.txt')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"tablename": {
+				"type": "string",
+				"defaultValue": "customer"
+			},
+			"schemaname": {
+				"type": "string",
+				"defaultValue": "SalesLT"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-08-31T18:42:20Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
