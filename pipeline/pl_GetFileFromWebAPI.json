@@ -54,8 +54,11 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_ADW_Stage",
-						"type": "DatasetReference"
+						"referenceName": "ds_ADW_Stage_parameter",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": "CovidHospitalizationReport.csv"
+						}
 					}
 				]
 			}
