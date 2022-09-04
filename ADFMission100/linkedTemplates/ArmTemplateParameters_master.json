@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "ADFMission100"
+		},
+		"ls_ADVSQLDB_connectionString": {
+			"value": ""
+		},
+		"ls_mission100Datalake_accountKey": {
+			"value": ""
+		},
+		"ls_PractiseSQLDB_connectionString": {
+			"value": ""
+		},
+		"ls_mission100Datalake_properties_typeProperties_url": {
+			"value": "https://dlmission100ade.dfs.core.windows.net/"
+		},
+		"ls_AzureKeyVault_properties_typeProperties_baseUrl": {
+			"value": "https://DBMainProd.vault.azure.net/"
+		},
+		"HttpServer1_properties_typeProperties_url": {
+			"value": "https://opendata.ecdc.europa.eu/covid19/hospitalicuadmissionrates/csv"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
