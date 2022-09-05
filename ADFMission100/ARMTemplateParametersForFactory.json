@@ -8,17 +8,14 @@
 		"ls_ADVSQLDB_connectionString": {
 			"value": ""
 		},
-		"ls_PractiseSQLDB_connectionString": {
-			"value": ""
-		},
-		"ls_mission100Datalake_accountKey": {
-			"value": ""
-		},
 		"HttpServer1_properties_typeProperties_url": {
 			"value": "https://opendata.ecdc.europa.eu/covid19/hospitalicuadmissionrates/csv"
 		},
 		"ls_AzureKeyVault_properties_typeProperties_baseUrl": {
-			"value": "https://DBMainProd.vault.azure.net/"
+			"value": "https://kv-dlmission100ade.vault.azure.net/"
+		},
+		"ls_PractiseSQLDB_properties_typeProperties_connectionString_secretName": {
+			"value": "sc-practise-dbconnectionstring"
 		},
 		"ls_mission100Datalake_properties_typeProperties_url": {
 			"value": "https://dlmission100ade.dfs.core.windows.net/"

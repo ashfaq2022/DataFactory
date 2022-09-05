@@ -11,21 +11,17 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ls_ADVSQLDB'"
 		},
-		"ls_PractiseSQLDB_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'ls_PractiseSQLDB'"
-		},
-		"ls_mission100Datalake_accountKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accountKey' of 'ls_mission100Datalake'"
-		},
 		"HttpServer1_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://opendata.ecdc.europa.eu/covid19/hospitalicuadmissionrates/csv"
 		},
 		"ls_AzureKeyVault_properties_typeProperties_baseUrl": {
 			"type": "string",
-			"defaultValue": "https://DBMainProd.vault.azure.net/"
+			"defaultValue": "https://kv-dlmission100ade.vault.azure.net/"
+		},
+		"ls_PractiseSQLDB_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "sc-practise-dbconnectionstring"
 		},
 		"ls_mission100Datalake_properties_typeProperties_url": {
 			"type": "string",
@@ -772,6 +768,31 @@
 				"[concat(variables('factoryId'), '/datasets/AzureSqlTable1')]",
 				"[concat(variables('factoryId'), '/datasets/ds_Mission100DataLake_productcsv')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_Ingest_ADWStage_SQL_KeyVault')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "This pipeline designed to connect data sets with Azure Key Vault.",
+				"activities": [
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_Ingest_ParquetData_SQL_ToArchive')]",
@@ -3729,10 +3750,20 @@
 				"annotations": [],
 				"type": "AzureSqlDatabase",
 				"typeProperties": {
-					"connectionString": "[parameters('ls_ADVSQLDB_connectionString')]"
+					"connectionString": "[parameters('ls_ADVSQLDB_connectionString')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "ls_AzureKeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "sc-practisedb-credentials"
+					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_AzureKeyVault')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ls_AzureKeyVault')]",
@@ -3755,10 +3786,19 @@
 				"annotations": [],
 				"type": "AzureSqlDatabase",
 				"typeProperties": {
-					"connectionString": "[parameters('ls_PractiseSQLDB_connectionString')]"
+					"connectionString": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "ls_AzureKeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "[parameters('ls_PractiseSQLDB_properties_typeProperties_connectionString_secretName')]"
+					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_AzureKeyVault')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ls_mission100Datalake')]",
@@ -3770,12 +3810,18 @@
 				"typeProperties": {
 					"url": "[parameters('ls_mission100Datalake_properties_typeProperties_url')]",
 					"accountKey": {
-						"type": "SecureString",
-						"value": "[parameters('ls_mission100Datalake_accountKey')]"
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "ls_AzureKeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "sc-dl-mission100ade2"
 					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_AzureKeyVault')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/df_IncrementID_SurrogateKey')]",

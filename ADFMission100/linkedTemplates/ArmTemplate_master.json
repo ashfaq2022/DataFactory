@@ -11,21 +11,17 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ls_ADVSQLDB'"
 		},
-		"ls_PractiseSQLDB_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'ls_PractiseSQLDB'"
-		},
-		"ls_mission100Datalake_accountKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accountKey' of 'ls_mission100Datalake'"
-		},
 		"HttpServer1_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://opendata.ecdc.europa.eu/covid19/hospitalicuadmissionrates/csv"
 		},
 		"ls_AzureKeyVault_properties_typeProperties_baseUrl": {
 			"type": "string",
-			"defaultValue": "https://DBMainProd.vault.azure.net/"
+			"defaultValue": "https://kv-dlmission100ade.vault.azure.net/"
+		},
+		"ls_PractiseSQLDB_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "sc-practise-dbconnectionstring"
 		},
 		"ls_mission100Datalake_properties_typeProperties_url": {
 			"type": "string",
@@ -61,17 +57,14 @@
 					"ls_ADVSQLDB_connectionString": {
 						"value": "[parameters('ls_ADVSQLDB_connectionString')]"
 					},
-					"ls_PractiseSQLDB_connectionString": {
-						"value": "[parameters('ls_PractiseSQLDB_connectionString')]"
-					},
-					"ls_mission100Datalake_accountKey": {
-						"value": "[parameters('ls_mission100Datalake_accountKey')]"
-					},
 					"HttpServer1_properties_typeProperties_url": {
 						"value": "[parameters('HttpServer1_properties_typeProperties_url')]"
 					},
 					"ls_AzureKeyVault_properties_typeProperties_baseUrl": {
 						"value": "[parameters('ls_AzureKeyVault_properties_typeProperties_baseUrl')]"
+					},
+					"ls_PractiseSQLDB_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('ls_PractiseSQLDB_properties_typeProperties_connectionString_secretName')]"
 					},
 					"ls_mission100Datalake_properties_typeProperties_url": {
 						"value": "[parameters('ls_mission100Datalake_properties_typeProperties_url')]"
