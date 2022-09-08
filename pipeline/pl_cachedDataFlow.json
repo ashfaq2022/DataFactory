@@ -1,0 +1,60 @@
+{
+	"name": "pl_cachedDataFlow",
+	"properties": {
+		"activities": [
+			{
+				"name": "Cached DF",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_CacheSink",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Cached DF",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "MaximumCustomerID",
+					"value": {
+						"value": "@activity('Cached DF').output",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"MaximumCustomerID": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
