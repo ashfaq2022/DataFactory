@@ -56,17 +56,17 @@
 						"activity": "Set variable1",
 						"dependencyConditions": [
 							"Succeeded",
-							"Completed"
+							"Failed"
 						]
 					}
 				],
 				"userProperties": [],
 				"typeProperties": {
 					"message": {
-						"value": "@concat(activity('Get Metadata1').output?.error?.Message,'|',variables('Ght'))",
+						"value": "@concat(activity('Get Metadata1')?.error?.Message,'|')",
 						"type": "Expression"
 					},
-					"errorCode": "2002"
+					"errorCode": "2000"
 				}
 			}
 		],
