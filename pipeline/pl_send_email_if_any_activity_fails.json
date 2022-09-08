@@ -32,8 +32,29 @@
 				}
 			},
 			{
-				"name": "Set variable1",
-				"type": "SetVariable",
+				"name": "Fail1",
+				"type": "Fail",
+				"dependsOn": [
+					{
+						"activity": "Wait1",
+						"dependencyConditions": [
+							"Skipped",
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"message": {
+						"value": "@concat(activity('Get Metadata1')?.error?.Message,'|',activity('Copy data1')?.error?.Message)",
+						"type": "Expression"
+					},
+					"errorCode": "2000"
+				}
+			},
+			{
+				"name": "Copy data1",
+				"type": "Copy",
 				"dependsOn": [
 					{
 						"activity": "Get Metadata1",
@@ -42,31 +63,77 @@
 						]
 					}
 				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
-					"variableName": "Ght",
-					"value": "123"
-				}
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_src_blob_custoreerrorfile",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": "Customer_error2.txt"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_ADW_Stage",
+						"type": "DatasetReference"
+					}
+				]
 			},
 			{
-				"name": "Fail1",
-				"type": "Fail",
+				"name": "Wait1",
+				"type": "Wait",
 				"dependsOn": [
 					{
-						"activity": "Set variable1",
+						"activity": "Copy data1",
 						"dependencyConditions": [
-							"Succeeded",
-							"Failed"
+							"Succeeded"
 						]
 					}
 				],
 				"userProperties": [],
 				"typeProperties": {
-					"message": {
-						"value": "@concat(activity('Get Metadata1')?.error?.Message,'|')",
-						"type": "Expression"
-					},
-					"errorCode": "2000"
+					"waitTimeInSeconds": 1
 				}
 			}
 		],
