@@ -48,7 +48,7 @@
 				"     escapeChar: '\\\\',",
 				"     quoteChar: '\\\"',",
 				"     columnNamesAsHeader: true) ~> PractiseDbCovidHospitalization",
-				"PractiseDbCovidHospitalization derive(country = country + '.csv') ~> derivedColumn1",
+				"PractiseDbCovidHospitalization derive(country = 'PractiseStage/'+ country + '.csv') ~> derivedColumn1",
 				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     rowUrlColumn:'country',",
