@@ -71,7 +71,8 @@
 								"dataset": {
 									"referenceName": "ds_PractiseDB_Customer",
 									"type": "DatasetReference"
-								}
+								},
+								"firstRowOnly": false
 							}
 						}
 					]
