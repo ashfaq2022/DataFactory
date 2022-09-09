@@ -1,0 +1,63 @@
+{
+	"name": "pl_splitBigFileSize_smallSizeFiles",
+	"properties": {
+		"description": "Split the source file with huge size to small chunks in multipe",
+		"activities": [
+			{
+				"name": "Get Metadata1",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_PractiseStage_CovidHospital",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"size"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "PartitionCount",
+					"value": {
+						"value": "@string(div(activity('Get Metadata1').output.size,1000000))",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"PartitionCount": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
