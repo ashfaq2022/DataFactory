@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT distinct ((ROW_NUMBER()OVER(ORDER BY Date ASC)  - 1)/5000) AS BatchID\n  FROM [dbo].[covidhospitalization] ORDER BY BatchID",
+						"sqlReaderQuery": "drop table if exists ##temp\n\nSELECT *, ((ROW_NUMBER()OVER(ORDER BY Date ASC)  - 1)/5000) AS BatchID INTO ##TEMP\n  FROM [dbo].[covidhospitalization] ORDER BY BatchID\n\nSELECT distinct BatchID  FROM ##TEMP ORDER BY BatchID",
 						"queryTimeout": "01:52:00",
 						"partitionOption": "None"
 					},
@@ -62,7 +62,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@concat('drop table if exists #temp\n\nSELECT *, ((ROW_NUMBER()OVER(ORDER BY Date ASC)  - 1)/5000) AS BatchID INTO #TEMP\n  FROM [dbo].[covidhospitalization] ORDER BY BatchID\n \nSELECT * FROM #TEMP WHERE BatchID = ',item().BatchID)",
+										"value": "@concat('SELECT * FROM ##TEMP WHERE BatchID = ',item().BatchID)",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
