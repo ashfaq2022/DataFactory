@@ -43,7 +43,7 @@
 				"     format: 'delimited',",
 				"     fileSystem: 'inputdata',",
 				"     folderPath: 'PractiseStage',",
-				"     fileName: 'CovidHospitalizationReport.csv',",
+				"     fileName: 'covidhospitalization.csv',",
 				"     columnDelimiter: ',',",
 				"     escapeChar: '\\\\',",
 				"     quoteChar: '\\\"',",
