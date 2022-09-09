@@ -1,0 +1,42 @@
+{
+	"name": "pl_Script_Activity",
+	"properties": {
+		"description": "This can be used to trigger SQL DDL/DML scripts similar to SQL statements",
+		"activities": [
+			{
+				"name": "Script1",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "ls_PractiseSQLDB",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"parameters": [
+								{
+									"name": "Country",
+									"type": "String",
+									"value": "Austria",
+									"direction": "Input"
+								}
+							],
+							"type": "Query",
+							"text": "SELECT * FROM [dbo].[covidhospitalization] Where Country = @Country"
+						}
+					]
+				}
+			}
+		],
+		"annotations": []
+	}
+}
