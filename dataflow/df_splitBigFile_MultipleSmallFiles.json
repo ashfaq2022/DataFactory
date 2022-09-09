@@ -46,7 +46,7 @@
 				"     escapeChar: '\\\\',",
 				"     quoteChar: '\\\"',",
 				"     columnNamesAsHeader: false,",
-				"     filePattern:'CovidHospiatalization_[n]',",
+				"     filePattern:'CovidHospiatalization_[n].csv',",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
