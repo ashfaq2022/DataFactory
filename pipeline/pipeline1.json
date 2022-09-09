@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "drop table if exists ##temp\n\nSELECT *, ((ROW_NUMBER()OVER(ORDER BY Date ASC)  - 1)/5000) AS BatchID INTO ##TEMP\n  FROM [dbo].[covidhospitalization] ORDER BY BatchID\n\nSELECT distinct BatchID  FROM ##TEMP ORDER BY BatchID",
+						"sqlReaderQuery": "drop table if exists temp\n\nSELECT *, ((ROW_NUMBER()OVER(ORDER BY Date ASC)  - 1)/5000) AS BatchID INTO TEMP\n  FROM [dbo].[covidhospitalization] ORDER BY BatchID\n\nSELECT distinct BatchID  FROM TEMP ORDER BY BatchID",
 						"queryTimeout": "01:52:00",
 						"partitionOption": "None"
 					},
@@ -62,7 +62,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@concat('SELECT * FROM TempDB..##TEMP WHERE BatchID = ',item().BatchID)",
+										"value": "@concat('SELECT * FROM TEMP WHERE BatchID = ',item().BatchID)",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
@@ -76,6 +76,39 @@
 							}
 						}
 					]
+				}
+			},
+			{
+				"name": "Lookup1",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "DROP TABLE IF EXISTS Temp",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_PractiseDB_Customer",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
 				}
 			}
 		],
