@@ -4,7 +4,7 @@
 		"description": "This pipeline splits the data to multiple records using Flatten transformation",
 		"activities": [
 			{
-				"name": "Data flow1",
+				"name": "SplitColumnToMultipleRowsDF",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
