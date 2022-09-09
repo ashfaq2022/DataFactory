@@ -59,7 +59,7 @@
 				"     columnDelimiter: ',',",
 				"     escapeChar: '\\\\',",
 				"     quoteChar: '\\\"',",
-				"     columnNamesAsHeader: false,",
+				"     columnNamesAsHeader: true,",
 				"     partitionFileNames:['SkillsCollectedFile.csv'],",
 				"     umask: 0022,",
 				"     preCommands: [],",
