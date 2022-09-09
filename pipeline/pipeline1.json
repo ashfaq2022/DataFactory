@@ -100,7 +100,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "DROP TABLE IF EXISTS Temp",
+						"sqlReaderQuery": "DROP TABLE IF EXISTS Temp\nSELECT 1 AS A",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
