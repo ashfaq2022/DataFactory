@@ -62,7 +62,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@concat('SELECT * FROM ##TEMP WHERE BatchID = ',item().BatchID)",
+										"value": "@concat('SELECT * FROM TempDB..##TEMP WHERE BatchID = ',item().BatchID)",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
