@@ -18,7 +18,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": "SELECT distinct ((ROW_NUMBER()OVER(ORDER BY Date ASC)  - 1)/5000) AS BatchID\n  FROM [dbo].[covidhospitalization] ORDER BY BatchID",
-						"queryTimeout": "02:00:00",
+						"queryTimeout": "01:52:00",
 						"partitionOption": "None"
 					},
 					"dataset": {
@@ -26,6 +26,55 @@
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "GetBatches",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('GetBatches').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "GetRecordsForBatch",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "@concat('drop table if exists #temp\n\nSELECT *, ((ROW_NUMBER()OVER(ORDER BY Date ASC)  - 1)/5000) AS BatchID INTO #TEMP\n  FROM [dbo].[covidhospitalization] ORDER BY BatchID\n \nSELECT * FROM #TEMP WHERE BatchID = ',item().BatchID)",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "ds_PractiseDB_Customer",
+									"type": "DatasetReference"
+								}
+							}
+						}
+					]
 				}
 			}
 		],
