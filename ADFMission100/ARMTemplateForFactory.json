@@ -6196,7 +6196,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"name": "[concat(parameters('factoryName'), '/pl_SplitTable_toHandleLookup_5000rows')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -6216,8 +6216,93 @@
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
-								"sqlReaderQuery": "SELECT distinct ((ROW_NUMBER()OVER(ORDER BY Date ASC)  - 1)/5000) AS BatchID\n  FROM [dbo].[covidhospitalization] ORDER BY BatchID",
+								"sqlReaderQuery": "drop table if exists temp\n\nSELECT *, ((ROW_NUMBER()OVER(ORDER BY Date ASC)  - 1)/5000) AS BatchID INTO TEMP\n  FROM [dbo].[covidhospitalization] ORDER BY BatchID\n\nSELECT distinct BatchID  FROM TEMP ORDER BY BatchID",
 								"queryTimeout": "01:52:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_PractiseDB_Customer",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "GetBatches",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GetBatches').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "GetRecordsForBatch",
+									"type": "Lookup",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": {
+												"value": "@concat('SELECT * FROM TEMP WHERE BatchID = ',item().BatchID)",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"dataset": {
+											"referenceName": "ds_PractiseDB_Customer",
+											"type": "DatasetReference",
+											"parameters": {}
+										},
+										"firstRowOnly": false
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Lookup1",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "ForEach1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "DROP TABLE IF EXISTS Temp\nSELECT 1 AS A",
+								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
 							"dataset": {
@@ -6237,6 +6322,260 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ds_PractiseDB_Customer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_split_ColumnData_ToRows')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "ls_mission100Datalake",
+								"type": "LinkedServiceReference"
+							},
+							"name": "EmpSourceFile"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "ls_mission100Datalake",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "SkillSplit"
+						},
+						{
+							"name": "FlattenTrsnfSkill"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          EmpID as short,",
+						"          EmpName as string,",
+						"          Skills as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'inputdata',",
+						"     folderPath: 'PractiseStage',",
+						"     fileName: 'ToSplitFile.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> EmpSourceFile",
+						"EmpSourceFile derive(Skills = split(Skills, '|')) ~> SkillSplit",
+						"SkillSplit foldDown(unroll(Skills),",
+						"     mapColumn(",
+						"          EmpID,",
+						"          EmpName,",
+						"          Skills",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> FlattenTrsnfSkill",
+						"FlattenTrsnfSkill sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'inputdata',",
+						"     folderPath: 'PractiseStage',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['ToCollectFile.csv'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_mission100Datalake')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_Split_ColumnData_MultipleRows')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "This pipeline splits the data to multiple records using Flatten transformation",
+				"activities": [
+					{
+						"name": "SplitColumnToMultipleRowsDF",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_split_ColumnData_ToRows",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"EmpSourceFile": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_split_ColumnData_ToRows')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_collect_multipleRows_ColumnData')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "This DF collects multiple rows to single column value",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "ls_mission100Datalake",
+								"type": "LinkedServiceReference"
+							},
+							"name": "ToCollectFile"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "ls_mission100Datalake",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "aggregate1"
+						},
+						{
+							"name": "ArrayToString"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          EmpID as short,",
+						"          EmpName as string,",
+						"          Skills as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'inputdata',",
+						"     folderPath: 'PractiseStage',",
+						"     fileName: 'ToCollectFile.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> ToCollectFile",
+						"ToCollectFile aggregate(groupBy(EmpID,",
+						"          EmpName),",
+						"     Skills = collect(Skills)) ~> aggregate1",
+						"aggregate1 derive(Skills = replace(replace(replace(replace(toString(Skills),'[',''),']',''),',','|'),'\"','')) ~> ArrayToString",
+						"ArrayToString sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'inputdata',",
+						"     folderPath: 'PractiseStage',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['SkillsCollectedFile.csv'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_mission100Datalake')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_MergeMultipleRows_SingleColumnValue')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Merge multiple rows",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_collect_multipleRows_ColumnData",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"ToCollectFile": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_collect_multipleRows_ColumnData')]"
 			]
 		}
 	]
